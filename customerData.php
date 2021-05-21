@@ -11,6 +11,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <style>
+        #search:active{
+
+        }
+
+    </style>
 </head>
 <body>
 <?php
@@ -24,6 +30,9 @@ $customerData = mysqli_query($conn,$query);
 ?>
 
 <p align="center" style="font-weight: bold; font-size: 120%">Customer Manager</p>
+<div style="left: 20%; right: 20%; margin-right: 20%; margin-left: 20%">
+    <input id="search" type="text" class="form-control" placeholder="Enter your searching here" oninput="search(this.value)">
+</div>
 <button class="btn btn-success" id="showCreateModal">Create <i class="fa fa-plus"></i></button>
 <table class="table table-striped table-bordered">
     <thead>
@@ -132,102 +141,25 @@ $customerData = mysqli_query($conn,$query);
     </div>
 </div>
 
+
 <script src="toastrSetup.js"></script>
+<script src="crud.js"></script>
 <script>
-    $('#showCreateModal').click(function () {
-        $('#createModal').modal('show');
-    });
 
-    $('#createData').on('click', function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: 'createCustomer.php',
-                method: 'post',
-                data: $('#createForm').serialize(),
-                success: function (data) {
-                   let newData = JSON.parse(data);
-                    console.log(newData);
-                   $('#appendData').append("<tr class='customer"+newData.id+"'>" +
-                       "<td>"+newData.name+"</td>" +
-                       "<td>"+newData.phone+"</td>" +
-                       "<td>"+newData.email+"</td>" +
-                       "<td><a class='btn btn-danger deleteCustomer' onclick='deleteCustomer("+newData.id+")' id='"+newData.id+"' ><i class='fa fa-trash'></i></a></td>"+
-                       "<td><a class='btn btn-info updateCustomer' id='"+newData.id+"'><i class='fa fa-user'></i></a></td>"+
-                       "</tr>");
-                   $('#createModal').modal('hide');
-                   toastr.success(newData.name + ' has been create!');
-                },
-                error: function (response) {
-                    console.log(response);
-                }
-
-            });
-    });
-</script>
-<script>
-//delete customer
-    function deleteCustomer(id){
+    function search(search) {
         $.ajax({
-            url: "deleteCustomer.php",
+            url: 'search.php',
             method: 'post',
-            cache: false,
-            data:{id: id},
-            success: function () {
-                toastr.warning('Your data has been deleted!');
-                $('.customer'+id).remove();
-            }
-        });
-    };
 
-
-
-</script>
-<script>
-    // func get data user before it updated!
-    let id;
-   $('#appendData').on('click','.updateCustomer', function () {
-        id = $(this).attr('id');
-       $('#updateModal').modal('show');
-       $.ajax({
-           url: 'getCustomer.php',
-           method: 'post',
-           data: {id: id},
-           success: function (data) {
-               let currentData = JSON.parse(data);
-               console.log(currentData);
-               $('#idInput').val(currentData.id);
-               $('#nameInput').val(currentData.name);
-               $('#emailInput').val(currentData.email);
-               $('#phoneInput').val(currentData.phone);
-           }
-       });
-   });
-
-
-
-    //update form
-    $('#confirmUpdate').click(function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: 'updateCustomer.php',
-            method: 'post',
-            data: $('#updateForm').serialize(),
+            data: {
+                search: search
+            },
             success: function (data) {
-                let newData = JSON.parse(data);
-                console.log(newData);
-                $('.customer'+id).replaceWith("<tr class='customer"+newData.id+"'>" +
-                    "<td>"+newData.name+"</td>" +
-                    "<td>"+newData.phone+"</td>" +
-                    "<td>"+newData.email+"</td>" +
-                    "<td><a class='btn btn-danger deleteCustomer' onclick='deleteCustomer("+newData.id+")' id='"+newData.id+"' ><i class='fa fa-trash'></i></a></td>"+
-                    "<td><a class='btn btn-info updateCustomer' id='"+newData.id+"'><i class='fa fa-user'></i></a></td>"+
-                    "</tr>");
-                toastr.success('Your data has been changed!');
+                let queryData = JSON.parse(data);
+                $('#appendData').html(queryData.data);
             }
         });
-    });
-
-
+    }
 </script>
 </body>
 </html>
